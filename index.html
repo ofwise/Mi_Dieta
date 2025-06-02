@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Dieta Semanal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .days-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .day-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .day-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,1);
+        }
+
+        .day-btn.active {
+            background: #ff6b6b;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .day-content {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .day-title {
+            text-align: center;
+            color: #4a5568;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .meals-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .meal-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .meal-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .meal-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .meal-card .time {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .meal-card .food-items {
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #ff6b6b;
+        }
+
+        .modal h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .modal h3 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 1.3rem;
+        }
+
+        .modal p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .modal ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .modal li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .days-nav {
+                gap: 5px;
+            }
+            
+            .day-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Mi Dieta Semanal</h1>
+            <p>Plan nutricional personalizado</p>
+        </div>
+
+        <div class="days-nav">
+            <button class="day-btn" data-day="lunes">Lunes</button>
+            <button class="day-btn" data-day="martes">Martes</button>
+            <button class="day-btn" data-day="miercoles">Miércoles</button>
+            <button class="day-btn" data-day="jueves">Jueves</button>
+            <button class="day-btn" data-day="viernes">Viernes</button>
+            <button class="day-btn" data-day="sabado">Sábado</button>
+            <button class="day-btn" data-day="domingo">Domingo</button>
+        </div>
+
+        <div class="day-content">
+            <h2 class="day-title" id="currentDayTitle">Lunes</h2>
+            <div class="meals-grid" id="mealsContainer">
+                <!-- Las comidas se cargarán aquí dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar recetas -->
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent">
+                <!-- El contenido de la receta se cargará aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de la dieta semanal de David - Datos del PDF oficial
+        const dietData = {
+			lunes: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					//recipe: "Hidratación Matutina - Lunes",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir 0% MG con copos de avena y fresas", "Nuez pelada: 25g (5 nueces)"],
+					recipe: "Bol de kéfir 0% MG con copos de avena y fresas",
+					preparation: "INGREDIENTES: Kéfir 0% MG: 200g, Avena: 60g (4 cucharas soperas), Fresa o fresón: 120g (8 unidades). RECETA: 1. Añadir los copos de avena al kéfir, dejar reposar mínimo una hora para que el cereal se ablandezca. 2. Añadir la fruta y servir. Acompañar con 25g de nueces peladas."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Ensalada de garbanzos con salmón ahumado, piñones y picatostes", "Naranja"],
+					recipe: "Ensalada de garbanzos con salmón ahumado, piñones y picatostes",
+					preparation: "INGREDIENTES: Garbanzos cocidos: 150g, Lechuga: 40g (2 hojas grandes), Tomate crudo: 75g (4 rodajas), Maíz dulce enlatado: 40g (1/4 lata pequeña), Aceite de oliva: 5g (1 cucharada de postre), Piñones sin cáscara: 10g (1 cucharada sopera), Salmón ahumado: 40g (2 lonchas finas), Pan tostado integral (biscote): 9g (1 unidad). RECETA: 1. Escurrir los garbanzos cocidos en un colador, pasarlos bajo el chorro de agua fría y volcarlos a una fuente. 2. Añadir a la fuente el maíz escurrido, el tomate, la lechuga, el salmón ahumado en tiras y los piñones. Mezclar bien todos los ingredientes. 3. Romper con las manos el pan integral tipo biscote y agregar. Aliñar con aceite de oliva en crudo."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Pavo salteado con brócoli, setas y patata", "Kiwi"],
+					recipe: "Pavo salteado con brócoli, setas y patata",
+					preparation: "INGREDIENTES: Aceite de oliva: 8g (1 cucharada de postre), Pavo (muslo/contramuslo): 150g (2 chuletas), Brócoli: 175g (4 floretas), Patata: 150g (1 unidad pequeña), Cebolla blanca: 40g (1/3 unidad pequeña), Champiñón o seta: 125g (5 unidades medianas). RECETA: 1. Lavar el brócoli y cortar en ramilletes. Pelar la patata y trocear en dados. 2. Poner agua a hervir y añadir primero la patata. Cocer durante 20 minutos. Sacar y reservar. 3. En el mismo agua introducir los ramilletes de brócoli y cocer durante 5 minuto. Sacar y reservar. 4. En una sartén amplia, con la cantidad indicada de aceite, poner a pochar la cebolla picada finamente. Cuando empiece a verse transparente añadir el pavo cortado en dados con el champiñón laminado. Rehogar junto a la cebolla hasta que esté dorado el pavo. 5. Añadir el brócoli y la patata reservados y rehogar el conjunto para que se integren los sabores. Nota: se puede añadir especias o hierbas aromáticas al gusto."
+				}
+			},
+			martes: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					recipe: "Hidratación Matutina - Martes",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir 0% MG con copos de avena y kiwi", "Almendra tostada: 22g (15 almendras)"],
+					recipe: "Bol de kéfir 0% MG con copos de avena y kiwi",
+					preparation: "INGREDIENTES: Kéfir 0% MG: 200g, Avena: 60g (4 cucharas soperas), Kiwi: 120g (1 unidad grande). RECETA: Añadir los copos de avena al kéfir, dejar reposar unos minutos para que el cereal se ablandezca, añadir la fruta. Acompañar con 22g de almendras tostadas."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Ensalada verde", "Merluza a la plancha con arroz integral y verduras", "Mango"],
+					recipe: "Merluza a la plancha con arroz integral y verduras",
+					preparation: "INGREDIENTES:PARA LA ENSALADA VERDE:, Lechuga: 30g (2 hojas grande), Rúcula: 20g, Tomate crudo: 30g (2 rodajas), Pepino: 40g (4 rodajas), Cebolla o cebolleta: 30g (1 trozo pequeño), Aceituna verde: 10g (5 unidades), Aceite de oliva: 5g (1 cucharada de postre). PARA LA MERLUZA:, Filete de merluza: 100g (1 filete), Manzana golden: 75g (1/2 unidad mediana), Col lombarda: 75g (3 hojas), Brócoli: 100g (2 floretas), Zanahoria: 60g (1 unidad pequeña), Arroz integral: 40g (2 cucharadas soperas), Zumo de limón: 20g (1 cucharada), Aceite de oliva: 5g (1 cucharada de postre). RECETA: PARA LA ENSALADA VERDE: 1. Lavar y trocear todos los ingredientes. 2. Añadir aceite de oliva virgen extra y servir. PARA LA MERLUZA: 1. Poner un cazo con abundante agua a hervir, añadir el arroz integral y cocer 30-35 minutos. 2. Mientras se cuece el arroz, cocinar al vapor la col lombarda cortada en juliana y los ramilletes de brócoli. Cortar la zanahoria en bastones finos y trocear la manzana en dados. 3. Rehogar en una sartén engrasada la col lombarda con la manzana. Sacar y emplatar. 4. Asar a la plancha el filete de merluza limpio de espinas. Colocarlo en el plato al lado de la col. 5. Añadir completando el plato, los ramilletes de brócoli, los bastones de zanahoria y el arroz integral cocido. 6. Aliñar al gusto con aceite de oliva, zumo de limón o vinagre de manzana."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Crema de calabacín", "Tortilla de alcachofas", "Pan integral tostado", "Manzana"],
+					recipe: "Tortilla de alcachofas con crema de calabacín",
+					preparation: "INGREDIENTES: PARA LA CREMA DE CALABACÍN: Aceite de oliva: 5g (1 cucharada de postre), Calabacín: 100g (1 calabacín pequeño), Cebolla blanca: 30g (1/4 unidad pequeña), Puerro: 50g (5 rodajas). PARA LA TORTILLA DE ALCACHOFAS: Huevo de gallina: 60g (1 unidad talla M), Aceite de oliva: 8g (1 cucharada de postre), Corazones de alcachofa en conserva: 120g (1/2 unidad), Clara de huevo pasteurizada: 35g (1 unidad), Cebolla blanca: 40g (1/3 unidad pequeña). RECETA: PARA LA CREMA: 1. Rehogar en una olla con la cantidad sugerida de aceite la cebolla, el puerro y el calabacín cortados en dados. 2. Cocer durante 20 minutos. 3. Volcar la mezcla en el vaso de la batidora y triturar hasta obtener una crema fina. PARA LA TORTILLA: 1. Bullir alcachofas, escurrir y reservar. 2. Saltar la cebolla con la cantidad sugerida de aceite, añadir las alcachofas cortadas. 3. Batir el huevo con la clara. 4. Agregar el huevo batido a la sartén de las alcachofas y cuajar por ambos lados. Acompañar con pan integral de trigo: 30g (1 rebanada) y manzana roja: 120g (1 unidad pequeña)."
+				}
+			},
+			miercoles: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					recipe: "Hidratación Matutina - Miércoles",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir 0% MG con copos de avena y arándanos", "Almendra tostada: 22g (15 almendras)"],
+					recipe: "Bol de kéfir 0% MG con copos de avena y arándanos",
+					preparation: "INGREDIENTES: Kéfir 0% MG: 250g (Una ración y media), Avena: 80g (1 vaso), Arándanos: 120g (50 unidades). RECETA: Añadir los copos de avena al kéfir, dejar reposar unos minutos para que el cereal se ablandezca, añadir la fruta. Acompañar con 22g de almendras tostadas."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Ensalada de patatas y lentejas con atún y canónigos", "Pepino: 100g", "Naranja"],
+					recipe: "Ensalada de patatas y lentejas con atún y canónigos",
+					preparation: "INGREDIENTES: Patata: 170g (1 unidad mediana), Lentejas cocidas: 160g, Canónigos: 50g (1 plato pequeño), Tomate crudo: 180g (1 tomate mediano), Atún enlatado en agua: 80g (1 lata grande ovalada), Aceite de oliva: 8g (1 cucharada de postre). RECETA: 1. Cocer las patatas enteras y con piel. Cuando estén blandas, pelar y trocear en lonchas. 2. Lavar y trocear los canónigos y el tomate. 3. Escurrir las lentejas del agua de la conserva y enjuagar bajo el chorro de agua fría. 4. Emplatar la ensalada colocando en la base las lonchas de patata. Añadir encima, el tomate, la lechuga, las lentejas y por último el atún escurrido y desmenuzado. 5. Aliñar con aceite de oliva. Acompañar con pepino: 100g (1 unidad pequeña) y naranja: 130g (1 unidad pequeña)."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Fajitas de pavo con vegetales frescos", "Naranja"],
+					recipe: "Fajitas de pavo con vegetales frescos",
+					preparation: "INGREDIENTES: Cebolla paiteña: 25g (1/4 unidad), Pechuga de pavo: 125g (1 filete), Lechuga: 25g (2 hojas grande), Tomate crudo: 25g (1 rodaja), Limón: 50g (4 rodajas), Fajita integral (Tortilla mejicana de trigo integral): 40g (1 unidad), Aceite de oliva: 5g (1 cucharada de postre), Pimienta negra: 0.5g, Comino: 0.5g. RECETA: 1. Preparar todos los vegetales frescos: lavar y cortar la lechuga en tiras, lavar y cortar el tomate en cubos pequeños, corta la cebolla morada en tiras finas. 2. En un pequeño bol mezclar la pechuga de pavo cortada en tiras con el aceite de oliva, el comino, la sal y la pimienta. 3. Calentar una sartén a fuego medio-alto, agregar el pavo marinado y cocinar durante 5-6 minutos, o hasta que esté dorado. 4. Calentar la tortilla en una sartén aparte o en el microondas durante unos segundos. Colocar el pavo en el centro de la tortilla y añadir la lechuga, el tomate y la cebolla morada por encima. Exprimir el jugo de limón sobre la mezcla para darle un toque fresco. 5. Doblar la tortilla sobre el relleno y sirve inmediatamente."
+				}
+			},
+			jueves: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					recipe: "Hidratación Matutina - Jueves",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir 0% MG con copos de avena y arándanos", "Pistacho con cáscara: 20g (1 puñado pequeño)"],
+					recipe: "Bol de kéfir 0% MG con copos de avena y arándanos",
+					preparation: "INGREDIENTES: Kéfir 0% MG: 200g, Avena: 60g (4 cucharas soperas), Arándanos: 120g (50 unidades). RECETA: Añadir los copos de avena al kéfir, dejar reposar unos minutos para que el cereal se ablandezca, añadir la fruta. Acompañar con 20g de pistachos con cáscara."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Ensalada andaluza", "Macarrones integrales con carne picada y tomate", "Kiwi"],
+					recipe: "Macarrones integrales con carne picada y tomate",
+					preparation: "INGREDIENTES: PARA LA ENSALADA ANZALUZA: Aceite de oliva: 8g (1 cucharada de postre), Lechuga: 50g (3 hojas grandes), Pepino: 60g, Pimiento rojo: 90g (1/2 unidad mediana), Vinagre: 8g (Al gusto). PARA LOS MACARRONES: Macarrones integrales: 60g (1 vaso pequeño y 1/2 de 100 ml), Carne picada ternera: 80g, Tomate triturado natural: 50g, Aceite de oliva: 5g (1 cucharada de postre). RECETA: PARA LA ENSALADA ANDALUZA: 1. Lavar y cortar en dados de similar tamaño el pimiento rojo y el pepino. Lavar y trocear la lechuga. 2. Preparar el aliño mezclando el aceite de oliva con el vinagre. Batir para que emulsione. 3. Emplatar las hortalizas y regar con el aliño. PARA LOS MACARRONES: 1. Cocer los macarrones en abundante agua hirviendo durante 12 minutos. Escurrir y reservar. 2. Pochar la carne picada sazonada con pimienta, cuando esté dorada agregar el tomate triturado y cocinar hasta que evapore el agua. 3. Mezclar los macarrones con la salsa de tomate y carne picada. Aderezar con especias o hierbas aromáticas al gusto."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Crema de calabacín", "Tortilla francesa con espárragos blancos, tomate y lechuga", "Pan integral tostado", "Manzana"],
+					recipe: "Tortilla francesa con espárragos blancos",
+					preparation: "INGREDIENTES: PARA LA CREMA DE CALABACÍN: Aceite de oliva: 5g (1 cucharada de postre), Calabacín: 100g (1 calabacín pequeño), Cebolla blanca: 30g (1/4 unidad pequeña), Puerro: 50g (5 rodajas). PARA LA TORTILLA FRANCESA: Espárrago blanco: 50g (2 espárragos medianos), Lechuga: 20g (1 hoja grande), Tomate crudo: 45g (3 rodajas), Huevo de gallina: 60g (1 unidad talla M), Aceite de oliva: 5g (1 cucharada de postre).RECETA: PARA LA CREMA DE CALABACÍN: 1. Rehogar en una olla con la cantidad sugerida de aceite la cebolla, el puerro y el calabacín cortados en dados. 2. Cocer durante 20 minutos. 3. Volcar la mezcla en el vaso de la batidora y triturar hasta obtener una crema fina.  PARA LA TORTILLA FRANCESA: 1. Poner al fuego una sartén ligeramente engrasada, cuando esté caliente verter y extender el huevo batido y dejar cuajar 3 minutos, doblar por la mitad y voltear para que se cuaje por el otro lado. 2. Lavar y cortar el tomate y la lechuga. 3. Emplatar la tortilla francesa con los espárragos blancos, el tomate y la lechuga mezclados. Aliñar las hortalizas con aceite de oliva en crudo. Acompañar con pan integral de trigo: 30g (1 rebanada)."
+				}
+			},
+			viernes: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					recipe: "Hidratación Matutina - Viernes",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir 0% MG con copos de avena y arándanos", "Almendra tostada: 22g (15 almendras)"],
+					recipe: "Bol de kéfir 0% MG con copos de avena y arándanos",
+					preparation: "INGREDIENTES: Kéfir 0% MG: 250g (Una ración y media), Avena: 80g (1 vaso), Arándanos: 120g (50 unidades). RECETA: Añadir los copos de avena al kéfir, dejar reposar unos minutos para que el cereal se ablandezca, añadir la fruta. Acompañar con 22g de almendras tostadas."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Ensalada andaluza", "Alubias con verduras, jamón y tomate", "Naranja"],
+					recipe: "Alubias con verduras, jamón y tomate",
+					preparation: "INGREDIENTES: PARA LA ENSALADA ANDALUZA: Aceite de oliva: 8g (1 cucharada de postre), Lechuga: 50g (3 hojas grandes), Pepino: 60g, Pimiento rojo: 90g (1/2 unidad mediana), Vinagre: 8g (Al gusto). PARA LAS ALUBIAS: Tomate crudo: 120g (1 tomate pequeño tipo raff), Calabacín: 40g (3 rodajas), Pimiento rojo: 30g (2 rodaja), Ajo: 5g (1 diente), Aceite de oliva: 8g (1 cucharada de postre), Jamón serrano: 30g (3 lonchas), Alubias cocidas: 175g (1 vaso). RECETA: PARA LA ENSALADA: 1. Lavar y cortar en dados de similar tamaño el pimiento rojo y el pepino. Lavar y trocear la lechuga. 2. Preparar el aliño mezclando el aceite de oliva con el vinagre. Batir para que emulsione. 3. Emplatar las hortalizas y regar con el aliño.  PARA LAS ALUBIAS: 1. Volcar las alubias cocidas en un colador, pasarlas bajo el chorro de agua fría, dejarlas escurrir y reservar. 2. Pochar el calabacín, el pimiento y el ajo troceados a dados. Cuando se empiece a dorar la verdura añadir el tomate rallado y sofreír hasta que evapore el agua. 3. Añadir al sofrito el jamón troceado y las alubias cocidas reservadas, mezclar todo bien. 4. Dejar reposar unos minutos y servir."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Crudités de zanahoria", "Salmón a la plancha con pisto", "Pan integral tostado", "Kiwi"],
+					recipe: "Salmón a la plancha con pisto",
+					preparation: "INGREDIENTES: PARA EL CRUDITÉ: Zanahoria: 100g (1 unidad grande). PARA EL SALMÓN A LA PLANCHA CON PISTO: Salmón: 120g, Pimiento rojo: 30g (2 rodaja), Pimiento verde: 30g (2 rodajas), Aceite de oliva: 5g (1 cucharada de postre), Cebolla blanca: 30g (1/4 unidad pequeña), Tomate triturado natural: 45g. RECETA: PARA LOS CRUDITÉS: 1. Lavar, pelar y cortar zanahoria. 2. Colocar los crudités en un bol y servir.  PARA EL SALMÓN: 1. Pochar en la cantidad sugerida de aceite la cebolla y los pimientos cortados en pequeños dados. Cuando la cebolla se empiece a dorar agregar el tomate triturado y cocinar a fuego suave. 2. Colocar en la plancha caliente el filete de salmón limpio de espinas. 3. Emplatar el filete de salmón asado y cubrir con el pisto por encima. Acompañar con pan integral de trigo: 30g (1 rebanada)."
+				}
+			},
+			sabado: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					recipe: "Hidratación Matutina - Sábado",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir con copos de avena y piña", "Nuez pelada: 25g (5 nueces)"],
+					recipe: "Bol de kéfir con copos de avena y piña",
+					preparation: "INGREDIENTES: Kéfir: 200g (2 unidades pequeñas), Avena: 60g (4 cucharas soperas), Piña natural: 120g (1 rodaja). RECETA: Añadir los copos de avena al kéfir, dejar reposar unos minutos para que el cereal se ablandezca, añadir la fruta. Acompañar con 25g de nueces peladas."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Merluza al horno con patatas, coliflor, brócoli, cebolla y naranja", "Naranja"],
+					recipe: "Merluza al horno",
+					preparation: "INGREDIENTES: Brócoli: 100g (2 floretas), Coliflor: 100g (1 plato pequeño), Patata: 100g (1 unidad pequeña), Cebolla o cebolleta: 80g (1/2 cebolleta), Filete de merluza: 150g (3 medallones), Aceite de oliva: 5g (1 cucharada de postre), Naranja: 170g (1 unidad pequeña), Sal común: 0.5g, Pimienta negra: 0.5g, Caldo vegetal: 100g. RECETA: 1. Cortar la patata, la cebolla, el brócoli y la coliflor. Salpimentar y añadir hierbas aromáticas al gusto. 2. Cocinar al vapor la verdura y mientras tanto pasar la merluza por la sartén. 3. Exprimir la naranja y mezclar el zumo con caldo de verduras (o agua). Regar con la mezcla las hortalizas y rehogar 5 minutos. 4. Colocar encima de las patatas la merluza, sazonar y poner unas rodajas finas de naranja encima de la merluza. 5. Emplatar con las verduras de guarnición."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Ensalada verde", "Tostada integral de aguacate y jamón serrano", "Manzana"],
+					recipe: "Tostada integral de aguacate y jamón serrano",
+					preparation: "INGREDIENTES: PARA LA ENSALADA VERDE: Lechuga: 30g (2 hojas grande), Rúcula: 20g, Tomate crudo: 30g (2 rodajas), Pepino: 40g (4 rodajas), Cebolla o cebolleta: 30g (1 trozo pequeño), Aceituna verde: 10g (5 unidades), Aceite de oliva: 5g (1 cucharada de postre). PARA LA TOSTADA: Pan integral de trigo: 60g (1/4 de barra de 250 g), Aguacate / palta: 20g (3 lonchas finas), Jamón serrano: 30g (3 lonchas), Aceite de oliva: 2.5g (1 cucharada de café). RECETA: PARA LA ENSALADA VERDE: 1. Lavar y trocear todos los ingredientes. 2. Añadir aceite de oliva virgen extra y servir. PARA LA TOSTADA: 1. Tostar una rebanada de pan, arrastrar un ajo crudo cortado por la mitad y el tomate de untar, esparcir la cantidad de aceite pautada. 2. Colocar una loncha de jamón salada y otra de aguacate."
+				}
+			},
+			domingo: {
+				"al-levantarse": {
+					time: "08:00",
+					foods: ["Café descafeinado con leche desnatada sin lactosa", "Agua mineral: 250g"],
+					recipe: "Hidratación Matutina - Domingo",
+					preparation: "INGREDIENTES: Leche desnatada sin lactosa 0%MG: 150g (1 vaso pequeño), Café descafeinado (infusión): 50g (1 taza). RECETA: Preparar el café descafeinado y servir con la leche desnatada sin lactosa caliente."
+				},
+				desayuno: {
+					time: "10:00",
+					foods: ["Bol de kéfir 0% MG con copos de avena, mango y frambuesas", "Pistacho con cáscara: 30g (1 puñado pequeño)"],
+					recipe: "Bol de kéfir 0% MG con copos de avena, mango y frambuesas",
+					preparation: "INGREDIENTES: Kéfir 0% MG: 200g, Avena: 60g (4 cucharas soperas), Mango: 100g, Frambuesa: 60g (20 unidades). RECETA: Añadir los copos de avena al kéfir, dejar reposar unos minutos para que el cereal se ablandezca, añadir la fruta. Acompañar con 30g de pistachos con cáscara."
+				},
+				comida: {
+					time: "15:00",
+					foods: ["Agua mineral: 250g", "Espaguetis integrales con pollo y verduras al wok", "Kiwi"],
+					recipe: "Espaguetis integrales con pollo y verduras al wok",
+					preparation: "INGREDIENTES: Cebolla o cebolleta: 60g (1/3 de cebolleta), Calabacín/ zapallito/ zucchini: 100g (1 calabacín pequeño), Zanahoria: 80g (1 unidad mediana), Guisante, arveja hervido: 45g, Pollo, pechuga, solomillo: 75g, Espaguetis integrales: 60g, Salsa de soja: 10g. RECETA: 1. Cocer los espaguetis integrales en abundante agua con sal durante 15 minutos. Escurrir y reservar. 2. Cocinar a la plancha la pechuga de pollo. Trocear en tacos gruesos y reservar. 3. Añadir en la misma sartén el calabacín y la zanahoria cortados en bastones, los guisantes escurridos y la cebolla picada. Saltear las verduras y cuando la cebolla se empiece a dorar agregar la salsa de soja. Rehogar durante un par de minutos. 4. Agregar los espaguetis y la pechuga reservada y mezclar bien con el resto de ingredientes."
+				},
+				cena: {
+					time: "21:30",
+					foods: ["Agua mineral: 250g", "Ensalada de arroz integral con aguacate", "Huevo duro", "Plátano"],
+					recipe: "Ensalada de arroz integral con aguacate",
+					preparation: "INGREDIENTES: PARA LA ENSALADA DE ARROZ INTEGRAL: Arroz integral: 40g (2 cucharadas soperas), Aceite de oliva: 5g (1 cucharada de postre), Pimiento rojo: 20g (2 rodaja), Aguacate / palta: 50g (1/4 pieza), Lechuga: 10g (1 hoja grande), Aceituna negra: 12g (5 unidades). PARA EL HUEVO DURO: Huevo de gallina: 60g (1 unidad talla M). RECETA: PARA LA ENSALADA DE ARROZ INTEGRAL: 1. Enjuagar el arroz integral en un colador bajo el chorro de agua fría, durante medio minuto. 2. Poner un cazo con abundante agua a hervir, añadir el arroz y cocer 30-35 minutos. Una vez listo, escurrir y reservar. 3. Lavar y trocear la lechuga y el pimiento rojo. Pelar el aguacate y trocear en lonchas finas. Mezclar el arroz con la hortalizas y las aceitunas. Aliñar con el aceite sugerido. 4. Emplatar la ensalada de arroz y el aguacate en lonchas al lado. PARA EL HUEVO DURO: Hervir el huevo en agua con una pizca de sal (de esta manera se pela mejor) durante 8-10 min."
+				}
+			}
+		};
+        // Función para obtener el día actual
+        function getCurrentDay() {
+            const days = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+            const today = new Date().getDay();
+            return days[today];
+        }
+
+        // Función para mostrar las comidas del día
+        function showDay(day) {
+            const dayData = dietData[day];
+            const dayTitle = document.getElementById('currentDayTitle');
+            const mealsContainer = document.getElementById('mealsContainer');
+            
+            // Capitalizar primera letra
+            dayTitle.textContent = day.charAt(0).toUpperCase() + day.slice(1);
+            
+            // Limpiar contenedor
+            mealsContainer.innerHTML = '';
+            
+            // Colores para cada comida - Todos iguales (púrpura)
+            const mealColors = {
+                'al-levantarse': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'desayuno': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                'almuerzo': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'cena': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            };
+            
+            // Crear cards para cada comida
+            Object.keys(dayData).forEach(mealKey => {
+                const meal = dayData[mealKey];
+                const mealCard = document.createElement('div');
+                mealCard.className = 'meal-card';
+                mealCard.style.background = mealColors[mealKey] || mealColors['almuerzo'];
+                
+                const mealName = mealKey.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                mealCard.innerHTML = `
+                    <h3>${mealName}</h3>
+                    <div class="time">⏰ ${meal.time}</div>
+                    <div class="food-items">${meal.foods.join(' • ')}</div>
+                `;
+                
+                mealCard.addEventListener('click', () => showRecipe(day, mealKey, mealName));
+                mealsContainer.appendChild(mealCard);
+            });
+            
+            // Actualizar botón activo
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.day === day) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Función para mostrar receta en modal
+        function showRecipe(day, mealKey, mealName) {
+            const meal = dietData[day][mealKey];
+            const modal = document.getElementById('recipeModal');
+            const modalContent = document.getElementById('modalContent');
+			    
+			// Hacer scroll al inicio del modal
+			modal.scrollTop = 0;
+            
+            // Procesar la preparación para formatear ingredientes y receta
+            let formattedPreparation = meal.preparation;
+            
+            // Encontrar el plato principal (el primero que no sea agua ni fruta simple)
+            const mainDish = meal.foods.find(food => 
+                !food.toLowerCase().includes('agua') && 
+                !food.toLowerCase().includes('café') &&
+                food.length > 15 // Platos principales suelen tener nombres más largos
+            ) || meal.foods[meal.foods.length - 2] || meal.foods[0]; // Fallback
+            
+            // Separar ingredientes y receta si están en el mismo texto
+            if (formattedPreparation.includes('INGREDIENTES:') && formattedPreparation.includes('RECETA:')) {
+                const parts = formattedPreparation.split('RECETA:');
+                const ingredientsPart = parts[0].replace('INGREDIENTES:', '').trim();
+                const recipePart = parts[1].trim();
+                
+				// Formatear ingredientes en lista
+				let formattedIngredients = ingredientsPart;
+
+				// Primero separar las secciones "PARA LA" y "PARA EL" 
+				const ingredientSections = formattedIngredients.split(/(PARA LA [^:]+:|PARA EL [^:]+:|PARA LOS [^:]+:|PARA LAS [^:]+:)/);
+				let ingredientsList = '';
+
+				for (let i = 0; i < ingredientSections.length; i++) {
+					const section = ingredientSections[i].trim();
+					if (section.match(/^PARA LA [^:]+:|^PARA EL [^:]+:|^PARA LOS [^:]+:|^PARA LAS [^:]+:/)) {
+						// Es un título de sección
+						ingredientsList += `</ul><br><strong style="font-size: 1.1rem; color: #333;">${section}</strong><br><ul>`;
+					} else if (section) {
+						// Son ingredientes
+						const ingredients = section.split(', ').filter(ing => ing.trim());
+						ingredients.forEach(ingredient => {
+							if (ingredient.trim()) {
+								ingredientsList += `<li>${ingredient.trim()}</li>`;
+							}
+						});
+					}
+				}
+
+				// Limpiar el primer cierre de ul y agregar el último ul de apertura si es necesario
+				ingredientsList = ingredientsList.replace(/^<\/ul>/, '<ul style="margin-left: 20px; padding-left: 0;">') + '</ul>';
+				ingredientsList = ingredientsList.replace(/<ul[^>]*><\/ul>/g, '');
+                
+				// Formatear pasos de la receta - mejorar el formato de números
+				let formattedRecipe = recipePart;
+				// Agregar salto de línea antes de secciones que empiecen con "PARA LA/EL"
+				formattedRecipe = formattedRecipe.replace(/(PARA LA [^:]+:|PARA EL [^:]+:|PARA LOS [^:]+:|PARA LAS [^:]+:)/g, '<br><strong>$1</strong><br><br>');
+
+				// Reemplazar patrones como "1. " seguido de texto
+				formattedRecipe = formattedRecipe.replace(/(\d+)\.\s*/g, '<p><strong>$1.</strong> ');
+				// Limpiar párrafos duplicados y cerrar correctamente
+				formattedRecipe = formattedRecipe.replace(/(<p><strong>\d+\.<\/strong> [^<]*)/g, '$1</p>');
+				// Limpiar cualquier párrafo vacío o mal formado
+				formattedRecipe = formattedRecipe.replace(/<\/p><p>/g, '</p><p>');
+				formattedRecipe = formattedRecipe.replace(/^<\/p>/, '');
+				if (!formattedRecipe.endsWith('</p>')) {
+					formattedRecipe += '</p>';
+				}
+                
+                modalContent.innerHTML = `
+                    <h2>${mealName.toUpperCase()}</h2>
+                    <h3>⏰ Hora: ${meal.time}</h3>
+                    <h3>🍽️ Alimentos:</h3>
+                    <ul>
+                        ${meal.foods.map(food => `<li>${food}</li>`).join('')}
+                    </ul>
+                    <h3 style="color: #667eea; margin-top: 25px; margin-bottom: 15px;">${mainDish}</h3>
+                    <h3>🧾 Ingredientes:</h3>
+                    <div>
+                        ${ingredientsList}
+                    </div>
+                    <h3>👨‍🍳 Preparación:</h3>
+                    <div style="line-height: 1.8; color: #555;">
+                        ${formattedRecipe}
+                    </div>
+                `;
+            } else {
+                // Formato original si no tiene la estructura esperada
+                modalContent.innerHTML = `
+                    <h2>${mealName.toUpperCase()}</h2>
+                    <h3>⏰ Hora: ${meal.time}</h3>
+                    <h3>🍽️ Alimentos:</h3>
+                    <ul>
+                        ${meal.foods.map(food => `<li>${food}</li>`).join('')}
+                    </ul>
+                    <h3 style="color: #667eea; margin-top: 25px; margin-bottom: 15px;">${mainDish}</h3>
+                    <h3>👨‍🍳 Preparación:</h3>
+                    <p>${meal.preparation}</p>
+                `;
+            }
+            
+            modal.style.display = 'block';
+			// Asegurar que el contenido del modal también esté arriba
+			modalContent.scrollTop = 0;
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar día actual al cargar
+            const currentDay = getCurrentDay();
+            showDay(currentDay);
+            
+            // Event listeners para botones de días
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    showDay(btn.dataset.day);
+                });
+            });
+            
+            // Event listener para cerrar modal
+            document.querySelector('.close').addEventListener('click', () => {
+                document.getElementById('recipeModal').style.display = 'none';
+            });
+            
+            // Cerrar modal al hacer clic fuera
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('recipeModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
